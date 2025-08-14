@@ -1,6 +1,9 @@
 import { readFile, writeFile } from "fs/promises";
 import { PostDto, Post } from "./blog.model";
-import { Injectable } from "@nestjs/common";
+import { Injectable} from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { Blog, BlogDocument } from "./blog.schema";
+import { Model } from "mongoose";
 
 // 블로그 리포지토리 인터페이스 정의
 export interface BlogRepository {
@@ -73,5 +76,36 @@ export class BlogFileRepository implements BlogRepository {
             posts[index] = updatePost;
             await writeFile(this.FILE_NAME, JSON.stringify(posts, null, 2));
         }
+    }
+}
+
+@Injectable()
+export class BlogMongoRepository implements BlogRepository{
+    constructor(@InjectModel(Blog.name)private blogModel: Model<BlogDocument>){}
+
+    async getAllPost(): Promise<Blog[]> {
+        return await this.blogModel.find().exec();
+    }
+
+    async createPost(postDto: PostDto): Promise<void> {
+        const createPost = {
+            ...postDto,
+            createdDt: new Date(),
+            updatedDt: new Date(),
+        };
+        this.blogModel.create(createPost);
+    }
+
+    async getPost(id: string): Promise<Post | null> {
+        return await this.blogModel.findById(id);
+    }
+
+    async deletePost(id: string): Promise<void> {
+        await this.blogModel.findByIdAndDelete(id);
+    }
+
+    async updatePost(id: string, postDto: PostDto): Promise<void> {
+        const updatePost = {id, ...postDto, updatedDt: new Date()};
+        await this.blogModel.findByIdAndUpdate(id, updatePost);
     }
 }
