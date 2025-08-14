@@ -11,7 +11,7 @@ import { Blog, BlogSchema } from "./blog.schema";
   imports: [
     // 몽고디비 연결 설정
     MongooseModule.forRoot(
-      'mongodb+srv://junhuilim:sjlim320@dsaf/blog',
+      'mongodb+srv://junhuilim:213132123@dsaf/blog',
     ),
     MongooseModule.forFeature([{name: Blog.name, schema: BlogSchema}]),
   ],
